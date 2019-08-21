@@ -122,5 +122,17 @@ public class ListImpl<T> implements List<T> {
         return null;
     }
 
+    private static class Node<T> {
+
+        T item;
+        Node<T> nextNode;
+        Node<T> prevNode;
+
+        public Node(final T item, final Node<T> prevNode, final Node<T> nextNode) {
+            this.item = item;
+            this.nextNode = nextNode;
+            this.prevNode = prevNode;
+        }
+    }
 
 }
