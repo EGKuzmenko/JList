@@ -1,9 +1,6 @@
 package io.hexlet.ds;
 
-import java.util.Collection;
-import java.util.Iterator;
-import java.util.List;
-import java.util.ListIterator;
+import java.util.*;
 
 public class ListImpl<T> implements List<T> {
 
@@ -13,19 +10,75 @@ public class ListImpl<T> implements List<T> {
 
     private int size;
 
+    public ListImpl() {
+        this.size = 0;
+        this.firstInList = null;
+        this.lastInList = null;
+    }
+
+    public ListImpl(Collection <? extends T> c) {
+        this();
+        if (c == null) {
+            throw new NullPointerException();
+        }
+        addAll(c);
+    }
+
+    public T getFirst() {
+        if (firstInList == null) {
+            throw new NoSuchElementException();
+        }
+
+        return firstInList.item;
+    }
+
+    public T getLast() {
+        if (lastInList == null) {
+            throw new NoSuchElementException();
+        }
+
+        return lastInList.item;
+    }
+
+    public T removeFirst() {
+        final Node<T> first = firstInList;
+        if (first == null) {
+            throw new NoSuchElementException();
+        }
+
+        return unlinkFirst(first);
+    }
+
+    public T removeLast() {
+        final Node<T> last = lastInList;
+        if (last == null) {
+            throw new NoSuchElementException();
+        }
+
+        return unlinkLast(last);
+    }
+
+    public void addFirst(final T t) {
+        linkFirst(t);
+    }
+
+    public void addLast(final T t) {
+        linkLast(t);
+    }
+
     @Override
     public int size() {
-        return 0;
+        return this.size;
     }
 
     @Override
     public boolean isEmpty() {
-        return false;
+        return this.size() == 0;
     }
 
     @Override
-    public boolean contains(Object o) {
-        return false;
+    public boolean contains(final Object o) {
+        return indexOf(o) != -1;
     }
 
     @Override
@@ -44,73 +97,191 @@ public class ListImpl<T> implements List<T> {
     }
 
     @Override
-    public boolean add(T t) {
-        return false;
+    public boolean add(final T t) {
+        linkLast(t);
+        return true;
     }
 
     @Override
     public boolean remove(Object o) {
+        if (o == null) {
+            for (Node<T> node = firstInList; node != null; node = node.nextNode) {
+                if (node.item == null) {
+                    unlink(node);
+                    return true;
+                }
+            }
+        } else {
+            for (Node<T> node = firstInList; node != null; node = node.nextNode) {
+                if (o.equals(node.item)) {
+                    unlink(node);
+                    return true;
+                }
+            }
+        }
         return false;
     }
 
     @Override
-    public boolean containsAll(Collection<?> c) {
-        return false;
+    public boolean containsAll(final Collection<?> c) {
+        for (final Object item : c) {
+            if (!this.contains(item)) return false;
+        }
+        return true;
     }
 
     @Override
-    public boolean addAll(Collection<? extends T> c) {
-        return false;
+    public boolean addAll(final Collection<? extends T> c) {
+        if (c == null) {
+            throw new NullPointerException();
+        }
+        for (final T item : c) {
+            add(item);
+        }
+        return true;
     }
 
     @Override
-    public boolean addAll(int index, Collection<? extends T> c) {
-        return false;
+    public boolean addAll(final int index, final Collection<? extends T> c) {
+        if (index < 0 || index >= this.size()) {
+            throw new IndexOutOfBoundsException();
+        }
+        if (c == null) {
+            throw new NullPointerException();
+        }
+
+        int i = index;
+        for (final T item : c) {
+            add(i, item);
+            i++;
+        }
+        return true;
     }
 
     @Override
-    public boolean removeAll(Collection<?> c) {
-        return false;
+    public boolean removeAll(final Collection<?> c) {
+        if (c == null) {
+            throw new NullPointerException();
+        }
+        for (final Object item : c) {
+            remove(item);
+        }
+        return true;
     }
 
     @Override
-    public boolean retainAll(Collection<?> c) {
-        return false;
+    public boolean retainAll(final Collection<?> c) {
+        if (c == null) {
+            throw new NullPointerException();
+        }
+
+        for (final T item : this) {
+            if (!c.contains(item)) {
+                this.remove(item);
+            }
+        }
+        return true;
     }
 
     @Override
     public void clear() {
-
+        this.firstInList = null;
+        this.lastInList = null;
+        this.size = 0;
     }
 
     @Override
-    public T get(int index) {
-        return null;
+    public T get(final int index) {
+        if (index < 0 || index >= size()) {
+            throw new IndexOutOfBoundsException();
+        }
+        int i = 0;
+        Node<T> current = firstInList;
+        while (i != index) {
+            current = current.nextNode;
+            i++;
+        }
+
+        return current.item;
     }
 
     @Override
-    public T set(int index, T element) {
-        return null;
+    public T set(final int index, final T element) {
+        if (index < 0 || index >= size())
+            throw new IndexOutOfBoundsException();
+
+        final Node<T> node = getItemByIndex(index);
+        T tempItem = node.item;
+        node.item = element;
+        return tempItem;
     }
 
     @Override
-    public void add(int index, T element) {
-
+    public void add(final int index, final T element) {
+        if (index < 0 || index >= this.size()) {
+            throw new IndexOutOfBoundsException();
+        }
+        link(element, getItemByIndex(index));
     }
 
     @Override
-    public T remove(int index) {
-        return null;
+    public T remove(final int index) {
+        if (index < 0 || index >= size()) {
+            throw new IndexOutOfBoundsException();
+        }
+
+        int i = 0;
+        Node<T> current = firstInList;
+        while (i != index) {
+            current = current.nextNode;
+            i++;
+        }
+
+        return unlink(current);
     }
 
     @Override
-    public int indexOf(Object o) {
-        return 0;
+    public int indexOf(final Object o) {
+        int i = 0;
+
+        if (o == null) {
+            for (Node<T> node = firstInList; node != null; node = node.nextNode) {
+                if (node.item == null) {
+                    return i;
+                }
+                i++;
+            }
+        } else {
+            for (Node<T> node = firstInList; node != null; node = node.nextNode) {
+                if (o.equals(node.item)) {
+                    return i;
+                }
+                i++;
+            }
+        }
+        return -1;
     }
 
     @Override
-    public int lastIndexOf(Object o) {
-        return 0;
+    public int lastIndexOf(final Object o) {
+        int i = this.size() - 1;
+
+        if (o == null) {
+            for (Node<T> node = lastInList; node != null; node = node.prevNode) {
+                if (node.item == null) {
+                    return i;
+                }
+                i--;
+            }
+        } else {
+            for (Node<T> node = lastInList; node != null; node = node.prevNode) {
+                if (o.equals(node.item)) {
+                    return i;
+                }
+                i--;
+            }
+        }
+        return -1;
     }
 
     @Override
@@ -126,6 +297,22 @@ public class ListImpl<T> implements List<T> {
     @Override
     public List<T> subList(int fromIndex, int toIndex) {
         return null;
+    }
+
+    private Node<T> getItemByIndex(final int index) {
+        int i = 0;
+        Node<T> current = firstInList;
+
+        if (index == this.size() - 1) {
+            current = lastInList;
+            return current;
+        }
+
+        while (i != index) {
+            current = current.nextNode;
+            i++;
+        }
+        return current;
     }
 
     private static class Node<T> {
