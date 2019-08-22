@@ -7,6 +7,12 @@ import java.util.ListIterator;
 
 public class ListImpl<T> implements List<T> {
 
+    private Node<T> firstInList;
+
+    private Node<T> lastInList;
+
+    private int size;
+
     @Override
     public int size() {
         return 0;
@@ -133,6 +139,99 @@ public class ListImpl<T> implements List<T> {
             this.nextNode = nextNode;
             this.prevNode = prevNode;
         }
+    }
+
+    private T unlinkFirst(Node<T> first) {
+        final T item = first.item;
+        final Node<T> nextNode = first.nextNode;
+        first.item = null;
+        first.nextNode = null;
+
+        firstInList = nextNode;
+        if (nextNode == null) {
+            lastInList = null;
+        } else {
+            nextNode.prevNode = null;
+        }
+        size--;
+        return item;
+    }
+
+    private T unlinkLast(Node<T> last) {
+        final T item = last.item;
+        final Node<T> prevNode = last.prevNode;
+        last.item = null;
+        last.prevNode = null;
+
+        lastInList = prevNode;
+        if (prevNode == null) {
+            firstInList = null;
+        } else {
+            prevNode.nextNode = null;
+        }
+        size--;
+        return item;
+    }
+
+    private void linkFirst(final T t) {
+        final Node<T> nextNode = firstInList;
+        final Node<T> newFirst = new Node<>(t, null, nextNode);
+        firstInList = newFirst;
+        if (nextNode == null) {
+            lastInList = newFirst;
+        } else {
+            nextNode.prevNode = newFirst;
+        }
+        size++;
+    }
+
+    private void linkLast(final T t) {
+        final Node<T> prevNode = lastInList;
+        final Node<T> newLast = new Node<>(t, prevNode, null);
+        lastInList = newLast;
+        if (prevNode == null) {
+            firstInList = newLast;
+        } else {
+            prevNode.nextNode = newLast;
+        }
+        size++;
+    }
+
+    private T unlink(Node<T> node) {
+        final T item = node.item;
+        final Node<T> prevNode = node.prevNode;
+        final Node<T> nextNode = node.nextNode;
+
+        if (prevNode == null) {
+            firstInList = nextNode;
+        } else {
+            prevNode.nextNode = nextNode;
+            node.prevNode = null;
+        }
+
+        if (nextNode == null) {
+            lastInList = prevNode;
+        } else {
+            nextNode.prevNode = prevNode;
+            node.nextNode = null;
+        }
+
+        node.item = null;
+        size--;
+        return item;
+    }
+
+    private void link(final T t, Node<T> node) {
+        final Node<T> prevNode = node.prevNode;
+        final Node<T> newNode = new Node<>(t, prevNode, node);
+
+        node.prevNode = newNode;
+        if (prevNode == null) {
+            firstInList = newNode;
+        } else {
+            prevNode.nextNode = newNode;
+        }
+        size++;
     }
 
 }
